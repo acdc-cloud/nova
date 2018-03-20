@@ -5099,6 +5099,13 @@ class ComputeManager(manager.Manager):
         # correct volume_id returned by Cinder.
         save_volume_id = comp_ret['save_volume_id']
         new_cinfo['serial'] = save_volume_id
+
+        # ACDCNOTE(sbra): When using a lvm-iscsi cinder backend the volume_id in
+        # the data dictionary isn't updated during migration. This causes exceptions
+        # down the line. These two lines have have been added to fix this issue.
+        if new_cinfo['driver_volume_type']=='iscsi' and 'data' in new_cinfo.keys():
+          new_cinfo['data']['volume_id']=save_volume_id
+
         values = {
             'connection_info': jsonutils.dumps(new_cinfo),
             'source_type': 'volume',
